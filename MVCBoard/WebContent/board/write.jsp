@@ -5,10 +5,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="./css/default.css" media="screen">
 <title>${message}</title>
 </head>
 <body>
-<table>
+<table class="layout">
 <tr height="50"><td>
 <jsp:include page="/incl/header.jsp" />
 </td></tr>
@@ -28,15 +29,15 @@
 </tr>
 <tr>
 <td>내용</td>
-<td><textarea cols="30" rows="5" name="content">"${board.content}"</textarea></td>
+<td><textarea cols="30" rows="5" name="content">${board.content}</textarea></td>
 </tr>
 <tr>
 <td colspan="2"><input type="hidden" name="action" value="${action}">
-<input type="hidden" name="action" value="${board.bbsno}">
-<input type="hidden" name="action" value="${board.masterId}">
-<input type="hidden" name="action" value="${board.replyNumber}">
-<input type="hidden" name="action" value="${board.replyStep}">
-<input type="hidden" name="action" value="${board.userId}">
+<input type="hidden" name="bbsno" value="${board.bbsno}">
+<input type="hidden" name="masterid" value="${board.masterId}">
+<input type="hidden" name="replynumber" value="${board.replyNumber}">
+<input type="hidden" name="replystep" value="${board.replyStep}">
+<input type="hidden" name="userid" value="${board.userId}">
 <input type="submit" value="저장"> <input type="reset" value="취소">
 </td></tr>
 </table>

@@ -45,8 +45,8 @@ public class LoginFilter implements Filter {
 				res.sendRedirect("/MVC/login.jsp");
 				return;
 			}
-			chain.doFilter(request, response);
 		}
+		chain.doFilter(request, response);
 	}
 
 	/**

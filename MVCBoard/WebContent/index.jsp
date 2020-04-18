@@ -4,10 +4,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="./css/default.css" media="screen">
 <title>첫 화면</title>
 </head>
 <body>
-<table>
+<table class="layout">
 <tr height="50"><td>
 <jsp:include page="/incl/header.jsp" /></td></tr>
 <tr height="500" valign="top"><td>

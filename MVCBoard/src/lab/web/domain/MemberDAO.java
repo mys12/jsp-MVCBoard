@@ -150,6 +150,11 @@ public class MemberDAO {
 							+ "(replynumber>0 or userid=?)";
 					pstmt = con.prepareStatement(sql2);
 					pstmt.setString(1, userid);
+					pstmt.setString(2, userid);
+					pstmt.executeUpdate();
+					String sql3="delete from member where userid=?";
+					pstmt = con.prepareStatement(sql3);
+					pstmt.setString(1, userid);
 					pstmt.executeUpdate();
 					con.commit();
 					

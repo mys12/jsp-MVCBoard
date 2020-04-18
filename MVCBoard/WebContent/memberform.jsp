@@ -5,10 +5,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="./css/default.css" media="screen">
 <title>회원 정보 입력</title>
 </head>
 <body>
-<table>
+<table class="layout">
 <tr height="50"><td>
 <jsp:include page="/incl/header.jsp" />
 </td></tr>

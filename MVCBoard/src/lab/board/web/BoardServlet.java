@@ -87,6 +87,70 @@ public class BoardServlet extends HttpServlet {
 			request.setAttribute("totalPageCount", (int)totalPage);
 			request.setAttribute("page", page);
 			
+		} else if("view".equals(action)) {
+			String bbsnoStr = request.getParameter("bbsno");
+			int bbsno = Integer.parseInt(bbsnoStr);
+			BoardVO board = dao.selectArticle(bbsno);
+			dao.updateReadCount(bbsno);
+			if(board.getContent() != null) {
+				board.setContent(board.getContent().replaceAll("\n","<br>"));
+			}
+			request.setAttribute("board", board);
+			request.setAttribute("message", "글 상세보기");
+			url = url + "/board/view.jsp";
+		} else if("reply".equals(action)) {
+			String bbsno = request.getParameter("bbsno");
+			BoardVO board = dao.selectArticle(Integer.parseInt(bbsno));
+			board.setSubject("[re]"+board.getSubject());
+			board.setContent(board.getContent()+"\n------------\n");
+			request.setAttribute("board", board);
+			request.setAttribute("message", "댓글 입력");
+			request.setAttribute("action", "reply_do");
+			url = url + "/board/write.jsp";
+		} else if("update".equals(action)) {
+			String bbsnoStr = request.getParameter("bbsno");
+			int bbsno = Integer.parseInt(bbsnoStr);
+			BoardVO board = dao.selectArticle(bbsno);
+			request.setAttribute("board", board);
+			request.setAttribute("message", "글 수정 화면");
+			request.setAttribute("action", "update_do");
+			url = url + "/board/write.jsp";
+		} else if("delete".equals(action)) {
+			String bbsnoStr = request.getParameter("bbsno");
+			String replynoStr = request.getParameter("replynumber");
+			request.setAttribute("bbsno", bbsnoStr);
+			request.setAttribute("replynumber", replynoStr);
+			request.setAttribute("action", "delete_do");
+			url=url+"/board/delete.jsp";
+		} else if("member".equals(action)) {
+			int count = dao.selectCount((String)session.getAttribute("userid"));
+			member=mdao.selectMember((String)session.getAttribute("userid"));
+			request.setAttribute("member", member);
+			request.setAttribute("count", count);
+			url = url+"/board/member.jsp";
+		} else if("memberList".equals(action)) {
+			String pageStr = request.getParameter("page");
+			int page=1;
+			if(pageStr != null) {
+				page = Integer.parseInt(pageStr);
+			}
+			String userid= (String)session.getAttribute("userid");
+			Collection<BoardVO> memberList = dao.memberList(userid, page);
+			request.setAttribute("lists", memberList);
+			int bbsCount = dao.selectCount(userid);
+			double totalPage = 0;
+			if(bbsCount>0) {
+				totalPage= bbsCount/20.0;
+			}
+			if((totalPage%1) != 0) {
+				totalPage = totalPage+1;
+			}
+			request.setAttribute("totalPage", (int)totalPage);
+			request.setAttribute("page", page);
+			url=url+"/board/memberlist.jsp";
+		}else {
+			request.setAttribute("message", "잘못된 명령: doGet-"+action);
+			url = url+"/error/error.jsp";
 		}
 		RequestDispatcher disp = request.getRequestDispatcher(url);
 		disp.forward(request, response);
@@ -96,8 +160,81 @@ public class BoardServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+		String action = request.getParameter("action");
+		String url = "";
+		HttpSession session = request.getSession();
+		if("write_do".equals(action)) {
+			String userId = (String)session.getAttribute("userid");
+			String password = request.getParameter("password");
+			String subject = request.getParameter("subject");
+			String content = request.getParameter("content");
+			
+			BoardVO board = new BoardVO();
+			board.setUserId(userId);
+			board.setPassword(password);
+			board.setContent(content);
+			board.setSubject(subject);
+			
+			dao.insertArticle(board);
+			
+			url = "/MVC/Board.do?action=list";
+			response.sendRedirect(url);
+			return;
+		} else if("reply_do".equals(action)) {
+			String userid = (String)session.getAttribute("userid");
+			String subject = request.getParameter("subject");
+			String content = request.getParameter("content");
+			String password = request.getParameter("password");
+			int bbsno = Integer.parseInt(request.getParameter("bbsno").trim());
+			int masterid = Integer.parseInt(request.getParameter("masterid"));
+			int replynumber = Integer.parseInt(request.getParameter("replynumber"));
+			int replystep = Integer.parseInt(request.getParameter("replystep"));
+			BoardVO board = new BoardVO();
+			board.setBbsno(bbsno);
+			board.setUserId(userid);
+			board.setSubject(subject);
+			board.setContent(content);
+			board.setPassword(password);
+			board.setMasterId(masterid);
+			board.setReplyNumber(replynumber);
+			board.setReplyStep(replystep);
+			dao.replyArticle(board);
+			response.sendRedirect("/MVC/Board.do?action=list");
+			return;
+		} else if("update_do".equals(action)) {
+			String password = request.getParameter("password");
+			String bbsnoStr = request.getParameter("bbsno");
+			int bbsno = Integer.parseInt(bbsnoStr);
+			String dbpw = dao.getPassword(bbsno);
+			if(dbpw.equals(password)) {
+				BoardVO board = new BoardVO();
+				board.setBbsno(bbsno);
+				board.setSubject(request.getParameter("subject"));
+				board.setContent(request.getParameter("content"));
+				dao.updateArticle(board);
+				url = "/MVC/Board.do?action=view&bbsno="+bbsno;
+				response.sendRedirect(url);
+				return;
+			} else {
+				request.setAttribute("message", "비밀번호가 다릅니다. 수정되지 않았습니다.");
+				url = url+"/error/error.jsp";
+			}
+		} else if("delete_do".equals(action)) {
+			String password = request.getParameter("password");
+			int bbsno = (Integer.parseInt(request.getParameter("bbsno")));
+			int replynumber = (Integer.parseInt(request.getParameter("replynumber")));
+			String dbpw = dao.getPassword(bbsno);
+			if(dbpw.equals(password)) {
+				dao.deleteArticle(bbsno, replynumber);
+				url="/MVC/Board.do?action=list";
+				response.sendRedirect(url);
+				return;
+			}else {
+				request.setAttribute("message", "비밀번호가 다릅니다. 삭제할 수 없습니다.");
+				url = url + "/error/error.jsp";
+			}
+		}
+		
 	}
 
 }

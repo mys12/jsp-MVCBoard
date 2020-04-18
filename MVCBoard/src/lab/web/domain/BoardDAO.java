@@ -184,6 +184,7 @@ public class BoardDAO {
 			con.setAutoCommit(false);
 			
 			String sql1 = "update board set replynumber=replynumber+1 where masterid=? and replynumber >?";
+			pstmt = con.prepareStatement(sql1);
 			pstmt.setInt(1, board.getMasterId());
 			pstmt.setInt(2, board.getReplyNumber());
 			pstmt.executeUpdate();
@@ -259,7 +260,7 @@ public class BoardDAO {
 	public void updateArticle(BoardVO board) {
 		Connection con = null;
 		String sql = "update board set "
-				+ "subject=?, content=?, wirtedate=SYSDATE "
+				+ "subject=?, content=?, writedate=SYSDATE "
 				+ "where bbsno=?";
 		try {
 			con = getConnection();
